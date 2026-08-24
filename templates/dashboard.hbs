@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+    <header class="navbar">
+        <h2>Student Hub {{#if naming}}- Welcome, {{naming}}!{{/if}}</h2>
+        <button onclick="logout()" class="btn-logout">Logout</button>
+    </header>
+
+    <!-- Tab Buttons -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="openTab(event, 'schedule')">Weekly Schedule</button>
+        <button class="tab-btn" onclick="openTab(event, 'assignments')">Assignments</button>
+        <button class="tab-btn" onclick="openTab(event, 'courses')">Courses</button>
+    </div>
+
+    <main class="content-container">
+        
+        <!-- TAB 1: WEEKLY SCHEDULE -->
+        <section id="schedule" class="tab-content active">
+            <h3>Weekly Schedule & Progress</h3>
+            <div class="weekly-grid">
+                <script>
+                    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                    days.forEach(day => {
+                        document.write(`
+                            <div class="day-card" id="day-${day}">
+                                <h4>${day}</h4>
+                                
+                                <div class="task-section">
+                                    <h5>Deadlines</h5>
+                                    <div class="task-list" id="${day}-deadlines"></div>
+                                    <div class="input-inline">
+                                        <input type="text" id="${day}-deadline-input" placeholder="Add deadline...">
+                                        <button onclick="addManualTask('${day}', 'deadlines')">+</button>
+                                    </div>
+                                </div>
+
+                                <div class="progress-container">
+                                    <span class="progress-label">Completion</span>
+                                    <div class="progress-bar-bg">
+                                        <div class="progress-fill" id="${day}-progress"></div>
+                                    </div>
+                                </div>
+
+                                <div class="task-section">
+                                    <h5>Tasks</h5>
+                                    <div class="task-list" id="${day}-homework"></div>
+                                    <div class="input-inline">
+                                        <input type="text" id="${day}-homework-input" placeholder="Add task...">
+                                        <button onclick="addManualTask('${day}', 'homework')">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                        `);
+                    });
+                </script>
+            </div>
+        </section>
+
+       <!-- TAB 2: ASSIGNMENTS -->
+        <section id="assignments" class="tab-content">
+            <h3>Assignments List</h3>
+            <form id="assignmentForm" class="data-form">
+                <select id="assignSubject" required>
+                    <option value="" disabled selected>Select Course Code</option>
+                </select>
+                <input type="text" id="assignName" placeholder="Assignment Name" required>
+                <input type="date" id="assignDueDate" required>
+                <button type="submit">Add Assignment</button>
+            </form>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Assignment</th>
+                        <th>Due Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="assignmentTableBody"></tbody>
+            </table>
+        </section>
+
+        <!-- TAB 3: COURSES -->
+        <section id="courses" class="tab-content">
+            <h3>Course Overview</h3>
+            <form id="courseForm" class="data-form">
+                <input type="text" id="courseCode" placeholder="Code (e.g., ECE-105)" required>
+                <input type="text" id="courseName" placeholder="Course Name" required>
+                <input type="text" id="courseDesc" placeholder="Description">
+                <input type="text" id="courseTechnique" placeholder="Study Technique">
+                
+                <!-- Inside TAB 3: COURSES form -->
+<div class="color-picker-group">
+    <label>Course Color:</label>
+    <div class="color-palette" id="colorPalette">
+        <button type="button" class="swatch active" data-color="#e74c3c" style="background-color: #e74c3c;"></button>
+        <button type="button" class="swatch" data-color="#e67e22" style="background-color: #e67e22;"></button>
+        <button type="button" class="swatch" data-color="#f1c40f" style="background-color: #f1c40f;"></button>
+        <button type="button" class="swatch" data-color="#2ecc71" style="background-color: #2ecc71;"></button>
+        <button type="button" class="swatch" data-color="#3498db" style="background-color: #3498db;"></button>
+        <button type="button" class="swatch" data-color="#9b59b6" style="background-color: #9b59b6;"></button>
+        
+        <!-- Custom Color Picker -->
+        <div class="custom-swatch-wrapper" title="Custom Color">
+            <input type="color" id="customColorPicker" value="#16a085">
+        </div>
+    </div>
+</div>
+
+                <button type="submit">Add Course</button>
+            </form>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Color</th>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Study Technique</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="courseTableBody"></tbody>
+            </table>
+        </section>
+
+        
+    </main>
+
+    <script>
+        window.currentUser = "{{naming}}";
+    </script>
+    <script src="/dashboard.js"></script>
+</body>
+</html>
