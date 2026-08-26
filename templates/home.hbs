@@ -3,25 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
+    <title>Plantastic</title>
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    
-    {{#if naming}}
-        <h1>Hi, {{naming}}!</h1>
-        <p>Welcome back to your dashboard.</p>
-        <a href="/dashboard"><button>Go to Dashboard</button></a>
-        <br><br>
-        <a href="/login">Log out</a>
-    {{else}}
-        <h1>Welcome!</h1>
-        <p>Please log in or create a new account to continue.</p>
-        
-        <div>
-            <a href="/login"><button>Log In</button></a>
-            <a href="/signup"><button>Sign Up</button></a>
-        </div>
-    {{/if}}
+    <div class="auth-page">
+        <div class="auth-wrapper">
+        <div style="font-size: 3.5rem; margin-bottom: 10px;">🪴</div>
+        <h1>Welcome to Plantastic</h1>
+        <p>Your all-in-one planner for courses, schedules, and assignments.</p>
 
+        <div style="display: flex; gap: 12px; justify-content: center; margin-top: 20px;">
+            <a href="/login" class="btn btn-primary" style="text-decoration: none;">Log In</a>
+            <a href="/signup" class="btn btn-logout" style="text-decoration: none;">Sign Up</a>
+        </div>
+    </div>
 </body>
 </html>

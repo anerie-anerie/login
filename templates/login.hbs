@@ -1,23 +1,29 @@
+<!-- templates/login.hbs -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Login - Plantastic</title>
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    
-    <h2>Login</h2>
-    <form action="/login" method="post">
-        <input type="text" name="name" placeholder="Name" required>
-        <input type="password" name="password" placeholder="Password" required>
-        <input type="submit" value="Log In">
-    </form>
+    <div class="auth-page">
+        <div class="auth-wrapper">
+            <div style="font-size: 3rem; margin-bottom: 8px;">🪴</div>
+            <h1>Welcome to Plantastic</h1>
+            <p>Log in to access your peaceful study hub.</p>
 
-    <br>
-    <a href="/signup">Need an account? Sign up here</a>
-    <br>
-    <a href="/">← Back to Home</a>
+            <form action="/login" method="post" class="auth-form">
+                <input type="text" name="name" placeholder="Username" required autocomplete="off">
+                <input type="password" name="password" placeholder="Password" required>
+                <button type="submit" class="btn btn-primary">Log In ✨</button>
+            </form>
 
+            <p style="margin-top: 18px; font-size: 0.85rem; color: var(--text-muted);">
+                Don't have an account? <a href="/signup" style="color: var(--sage-dark); font-weight: 600;">Sign up</a>
+            </p>
+        </div>
+    </div>
 </body>
 </html>

@@ -1,4 +1,5 @@
-let selectedColor = '#e74c3c'; // Default selected rainbow color (Red)
+let selectedColor = '#ffa0a0'; // Default preset: Red
+let editingCourseIndex = null; // Track if we are editing an existing course
 
 let appData = {
     courses: [],
@@ -14,9 +15,7 @@ let appData = {
     }
 };
 
-const rainbowColors = ['#e74c3c', '#e67e22', '#f1c40f', '#2ecc71', '#3498db', '#9b59b6'];
-
-// Replace the DOMContentLoaded listener and course functions in dashboard.js with these:
+const rainbowColors = ['#ffa0a0', '#ffc9a0', '#ffefa0', '#d2ffa0', '#a0ffff', '#c2bafc'];
 
 document.addEventListener('DOMContentLoaded', () => {
     loadData();
@@ -31,79 +30,20 @@ document.addEventListener('DOMContentLoaded', () => {
     palette?.addEventListener('click', (e) => {
         if (e.target.classList.contains('swatch')) {
             document.querySelectorAll('#colorPalette .swatch').forEach(s => s.classList.remove('active'));
-            customPicker?.parentElement.classList.remove('active');
+            document.getElementById('customPickerWrapper')?.classList.remove('active');
             
             e.target.classList.add('active');
             selectedColor = e.target.getAttribute('data-color');
         }
     });
 
-    // Custom Color Input Handler
+    // Custom Color Input (Color Wheel Emoji) Handler
     customPicker?.addEventListener('input', (e) => {
         document.querySelectorAll('#colorPalette .swatch').forEach(s => s.classList.remove('active'));
-        customPicker.parentElement.classList.add('active');
+        document.getElementById('customPickerWrapper')?.classList.add('active');
         selectedColor = e.target.value;
     });
 });
-
-// Updated Inline Editing for Courses with Custom Color option
-function editCourseInline(index) {
-    const tbody = document.getElementById('courseTableBody');
-    const row = tbody.rows[index];
-    const item = appData.courses[index];
-
-    const swatchesHtml = rainbowColors.map(col => `
-        <button type="button" 
-                class="swatch ${item.color === col ? 'active' : ''}" 
-                style="background-color: ${col};" 
-                onclick="setEditColor(${index}, '${col}', event)">
-        </button>
-    `).join('');
-
-    const isCustom = !rainbowColors.includes(item.color);
-
-    row.innerHTML = `
-        <td>
-            <div class="color-palette" id="edit-palette-${index}">
-                ${swatchesHtml}
-                <div class="custom-swatch-wrapper ${isCustom ? 'active' : ''}" title="Custom Color">
-                    <input type="color" 
-                           id="edit-custom-picker-${index}" 
-                           value="${item.color || '#3498db'}" 
-                           oninput="setEditCustomColor(${index}, this.value)">
-                </div>
-            </div>
-            <input type="hidden" id="edit-color-${index}" value="${item.color || '#3498db'}">
-        </td>
-        <td><input type="text" id="edit-code-${index}" value="${item.code}"></td>
-        <td><input type="text" id="edit-name-${index}" value="${item.name}"></td>
-        <td><input type="text" id="edit-desc-${index}" value="${item.desc || ''}"></td>
-        <td><input type="text" id="edit-tech-${index}" value="${item.technique || ''}"></td>
-        <td>
-            <button onclick="saveCourseInline(${index})" class="btn-save">Save</button>
-            <button onclick="renderCourses()" class="btn-cancel">Cancel</button>
-        </td>
-    `;
-}
-
-function setEditColor(index, color, event) {
-    document.getElementById(`edit-color-${index}`).value = color;
-    const palette = document.getElementById(`edit-palette-${index}`);
-    palette.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
-    palette.querySelector('.custom-swatch-wrapper').classList.remove('active');
-    event.target.classList.add('active');
-}
-
-function setEditCustomColor(index, color) {
-    document.getElementById(`edit-color-${index}`).value = color;
-    const palette = document.getElementById(`edit-palette-${index}`);
-    palette.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
-    palette.querySelector('.custom-swatch-wrapper').classList.add('active');
-}
-
-// ==========================================
-// MONGO API INTEGRATION
-// ==========================================
 
 async function saveData() {
     if (!window.currentUser) return;
@@ -117,7 +57,7 @@ async function saveData() {
             })
         });
     } catch (err) {
-        console.error("Error saving data to MongoDB:", err);
+        console.error("Error saving data:", err);
     }
 }
 
@@ -134,7 +74,7 @@ async function loadData() {
             }
         }
     } catch (err) {
-        console.error("Error loading data from MongoDB:", err);
+        console.error("Error loading data:", err);
     }
     renderAll();
 }
@@ -145,15 +85,10 @@ function renderAll() {
     renderSchedule();
 }
 
-// Helper: Get Course Color
 function getCourseColor(code) {
     const course = appData.courses.find(c => c.code === code);
-    return course && course.color ? course.color : '#3498db';
+    return course && course.color ? course.color : '#ffa0a0';
 }
-
-// ==========================================
-// DATE HELPERS
-// ==========================================
 
 function getCurrentWeekRange() {
     const now = new Date();
@@ -185,10 +120,7 @@ function getDayNameFromDate(dateStr) {
     return days[targetDate.getDay()];
 }
 
-// ==========================================
 // COURSES
-// ==========================================
-
 function addCourse(e) {
     e.preventDefault();
     const code = document.getElementById('courseCode').value.trim();
@@ -198,66 +130,47 @@ function addCourse(e) {
 
     if (!code || !name) return;
 
-    appData.courses.push({ code, name, desc, technique, color: selectedColor });
+    if (editingCourseIndex !== null) {
+        // Update existing course
+        appData.courses[editingCourseIndex] = { code, name, desc, technique, color: selectedColor };
+        editingCourseIndex = null;
+        
+        // Reset submit button text
+        const submitBtn = document.querySelector('#courseForm button[type="submit"]');
+        if (submitBtn) submitBtn.textContent = 'Add Course';
+    } else {
+        // Add new course
+        appData.courses.push({ code, name, desc, technique, color: selectedColor });
+    }
+
     saveData();
     renderAll();
     e.target.reset();
-}
-
-function editCourseInline(index) {
-    const tbody = document.getElementById('courseTableBody');
-    const row = tbody.rows[index];
-    const item = appData.courses[index];
-
-    const swatchesHtml = rainbowColors.map(col => `
-        <button type="button" 
-                class="swatch ${item.color === col ? 'active' : ''}" 
-                style="background-color: ${col};" 
-                onclick="setEditColor(${index}, '${col}')">
-        </button>
-    `).join('');
-
-    row.innerHTML = `
-        <td>
-            <div class="color-palette" id="edit-palette-${index}">${swatchesHtml}</div>
-            <input type="hidden" id="edit-color-${index}" value="${item.color || '#3498db'}">
-        </td>
-        <td><input type="text" id="edit-code-${index}" value="${item.code}"></td>
-        <td><input type="text" id="edit-name-${index}" value="${item.name}"></td>
-        <td><input type="text" id="edit-desc-${index}" value="${item.desc || ''}"></td>
-        <td><input type="text" id="edit-tech-${index}" value="${item.technique || ''}"></td>
-        <td>
-            <button onclick="saveCourseInline(${index})" class="btn-save">Save</button>
-            <button onclick="renderCourses()" class="btn-cancel">Cancel</button>
-        </td>
-    `;
-}
-
-function setEditColor(index, color) {
-    document.getElementById(`edit-color-${index}`).value = color;
-    const palette = document.getElementById(`edit-palette-${index}`);
-    palette.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
-    event.target.classList.add('active');
-}
-
-function saveCourseInline(index) {
-    const code = document.getElementById(`edit-code-${index}`).value.trim();
-    const name = document.getElementById(`edit-name-${index}`).value.trim();
-    const desc = document.getElementById(`edit-desc-${index}`).value.trim();
-    const technique = document.getElementById(`edit-tech-${index}`).value.trim();
-    const color = document.getElementById(`edit-color-${index}`).value;
-
-    if (!code || !name) return;
-
-    appData.courses[index] = { code, name, desc, technique, color };
-    saveData();
-    renderAll();
 }
 
 function deleteCourse(index) {
     appData.courses.splice(index, 1);
     saveData();
     renderAll();
+}
+
+function editCourse(index) {
+    const course = appData.courses[index];
+    if (!course) return;
+
+    // Fill form fields
+    document.getElementById('courseCode').value = course.code;
+    document.getElementById('courseName').value = course.name;
+    document.getElementById('courseDesc').value = course.desc || '';
+    document.getElementById('courseTechnique').value = course.technique || '';
+    selectedColor = course.color || '#ffa0a0';
+
+    // Set editing state
+    editingCourseIndex = index;
+
+    // Update button text to give feedback
+    const submitBtn = document.querySelector('#courseForm button[type="submit"]');
+    if (submitBtn) submitBtn.textContent = 'Update Course';
 }
 
 function renderCourses() {
@@ -273,13 +186,13 @@ function renderCourses() {
     appData.courses.forEach((c, idx) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td><span class="color-badge" style="background-color: ${c.color || '#3498db'};"></span></td>
+            <td><span class="color-badge" style="background-color: ${c.color || '#ffa0a0'};"></span></td>
             <td>${c.code}</td>
             <td>${c.name}</td>
             <td>${c.desc || '-'}</td>
             <td>${c.technique || '-'}</td>
             <td>
-                <button onclick="editCourseInline(${idx})" class="btn-edit">Edit</button>
+                <button onclick="editCourse(${idx})" class="btn btn-sm btn-edit">Edit</button>
                 <button onclick="deleteCourse(${idx})" class="btn-delete">Delete</button>
             </td>
         `;
@@ -294,10 +207,7 @@ function renderCourses() {
     });
 }
 
-// ==========================================
 // ASSIGNMENTS
-// ==========================================
-
 function addAssignment(e) {
     e.preventDefault();
     const subject = document.getElementById('assignSubject').value;
@@ -306,42 +216,18 @@ function addAssignment(e) {
 
     if (!subject || !name || !dueDate) return;
 
-    appData.assignments.push({ subject, name, dueDate });
+    appData.assignments.push({ subject, name, dueDate, completed: false });
     saveData();
     renderAll();
     e.target.reset();
 }
 
-function editAssignmentInline(index) {
-    const tbody = document.getElementById('assignmentTableBody');
-    const row = tbody.rows[index];
-    const item = appData.assignments[index];
-
-    let courseOptions = appData.courses.map(c => 
-        `<option value="${c.code}" ${c.code === item.subject ? 'selected' : ''}>${c.code}</option>`
-    ).join('');
-
-    row.innerHTML = `
-        <td><select id="edit-assign-subj-${index}">${courseOptions}</select></td>
-        <td><input type="text" id="edit-assign-name-${index}" value="${item.name}"></td>
-        <td><input type="date" id="edit-assign-date-${index}" value="${item.dueDate}"></td>
-        <td>
-            <button onclick="saveAssignmentInline(${index})" class="btn-save">Save</button>
-            <button onclick="renderAssignments()" class="btn-cancel">Cancel</button>
-        </td>
-    `;
-}
-
-function saveAssignmentInline(index) {
-    const subject = document.getElementById(`edit-assign-subj-${index}`).value;
-    const name = document.getElementById(`edit-assign-name-${index}`).value.trim();
-    const dueDate = document.getElementById(`edit-assign-date-${index}`).value;
-
-    if (!subject || !name || !dueDate) return;
-
-    appData.assignments[index] = { subject, name, dueDate };
-    saveData();
-    renderAll();
+function toggleAssignmentCompletion(index) {
+    if (appData.assignments[index]) {
+        appData.assignments[index].completed = !appData.assignments[index].completed;
+        saveData();
+        renderAll();
+    }
 }
 
 function deleteAssignment(index) {
@@ -364,7 +250,6 @@ function renderAssignments() {
             <td>${a.name}</td>
             <td>${a.dueDate}</td>
             <td>
-                <button onclick="editAssignmentInline(${idx})" class="btn-edit">Edit</button>
                 <button onclick="deleteAssignment(${idx})" class="btn-delete">Delete</button>
             </td>
         `;
@@ -372,10 +257,7 @@ function renderAssignments() {
     });
 }
 
-// ==========================================
 // WEEKLY SCHEDULE
-// ==========================================
-
 function renderSchedule() {
     const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -387,17 +269,23 @@ function renderSchedule() {
         deadlinesContainer.innerHTML = '';
         homeworkContainer.innerHTML = '';
 
-        // 1. FILTERED ASSIGNMENTS FOR CURRENT WEEK (Solid color card, no subject text)
-        const currentWeekAssignments = appData.assignments.filter(a => {
-            return isDateInCurrentWeek(a.dueDate) && getDayNameFromDate(a.dueDate) === day;
-        });
+        // 1. FILTERED ASSIGNMENTS FOR CURRENT WEEK (With Checkbox & Completion State)
+        const currentWeekAssignments = appData.assignments
+            .map((assignment, index) => ({ assignment, index }))
+            .filter(({ assignment }) => {
+                return isDateInCurrentWeek(assignment.dueDate) && getDayNameFromDate(assignment.dueDate) === day;
+            });
 
-        currentWeekAssignments.forEach(a => {
-            const courseColor = getCourseColor(a.subject);
+        currentWeekAssignments.forEach(({ assignment, index }) => {
+            const courseColor = getCourseColor(assignment.subject);
             const div = document.createElement('div');
-            div.className = 'task-item deadline-item auto-generated';
+            div.className = `task-item deadline-item auto-generated ${assignment.completed ? 'completed' : ''}`;
             div.style.backgroundColor = courseColor;
-            div.innerHTML = `<span>${a.name}</span>`;
+            div.innerHTML = `
+                <input type="checkbox" ${assignment.completed ? 'checked' : ''} onchange="toggleAssignmentCompletion(${index})">
+                <span>${assignment.name}</span>
+                <button class="delete-task-btn" onclick="deleteAssignment(${index})" title="Delete Assignment">×</button>
+            `;
             deadlinesContainer.appendChild(div);
         });
 
@@ -413,7 +301,7 @@ function renderSchedule() {
             deadlinesContainer.appendChild(div);
         });
 
-        // 3. MANUAL HOMEWORK / TASKS
+        // 3. MANUAL HOMEWORK
         (appData.schedule[day]?.homework || []).forEach((task, idx) => {
             const div = document.createElement('div');
             div.className = `task-item ${task.completed ? 'completed' : ''}`;
@@ -462,10 +350,12 @@ function removeManualTask(day, type, index) {
 
 function updateProgress(day) {
     const dayData = appData.schedule[day] || { deadlines: [], homework: [] };
-    const autoDeadlinesCount = appData.assignments.filter(a => isDateInCurrentWeek(a.dueDate) && getDayNameFromDate(a.dueDate) === day).length;
+    
+    const weekAssignments = appData.assignments.filter(a => isDateInCurrentWeek(a.dueDate) && getDayNameFromDate(a.dueDate) === day);
+    const completedAssignments = weekAssignments.filter(a => a.completed).length;
 
-    const totalTasks = dayData.deadlines.length + dayData.homework.length + autoDeadlinesCount;
-    const completedTasks = dayData.deadlines.filter(t => t.completed).length + dayData.homework.filter(t => t.completed).length;
+    const totalTasks = dayData.deadlines.length + dayData.homework.length + weekAssignments.length;
+    const completedTasks = dayData.deadlines.filter(t => t.completed).length + dayData.homework.filter(t => t.completed).length + completedAssignments;
 
     const percentage = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
 
