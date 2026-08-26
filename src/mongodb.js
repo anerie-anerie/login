@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 
-// Replace this placeholder string with your actual Atlas connection string from MongoDB Atlas!
-const dbURI = "mongodb+srv://anerie_new:magic_pass@cluster0.ue1xlrj.mongodb.net/?appName=Cluster0";
+const config = require("../config"); // Path to config.js
+
+const dbURI = config.mongoURI;
 
 mongoose.connect(dbURI)
 .then(() => {
