@@ -10,14 +10,18 @@
 <body>
     <div class="auth-page">
         <div class="auth-wrapper">
-            <div style="font-size: 3rem; margin-bottom: 8px;">🪴</div>
+            <div style="font-size: 3rem; margin-bottom: 8px;"></div>
             <h1>Welcome to Plantastic</h1>
             <p>Log in to access your peaceful study hub.</p>
+
+            {{#if error}}
+            <p class="form-error">{{error}}</p>
+            {{/if}}
 
             <form action="/login" method="post" class="auth-form">
                 <input type="text" name="name" placeholder="Username" required autocomplete="off">
                 <input type="password" name="password" placeholder="Password" required>
-                <button type="submit" class="btn btn-primary">Log In ✨</button>
+                <button type="submit" class="btn btn-primary">Log In</button>
             </form>
 
             <p style="margin-top: 18px; font-size: 0.85rem; color: var(--text-muted);">
@@ -25,5 +29,9 @@
             </p>
         </div>
     </div>
+
+    <footer class="site-footer">
+    <a href="https://github.com/anerie-anerie/login" target="_blank" rel="noopener noreferrer">built by anerie :)</a>
+</footer>
 </body>
 </html>

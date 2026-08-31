@@ -391,6 +391,35 @@ body {
     color: var(--text-muted);
 }
 
+.site-footer {
+    text-align: center;
+    padding: 20px 16px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: auto;
+}
+
+.site-footer a {
+    color: var(--sage-dark);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.site-footer a:hover {
+    text-decoration: underline;
+}
+
+.form-error {
+    background: #fdecea;
+    color: #b3261e;
+    border: 1px solid #f5c6c2;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    margin-bottom: 12px;
+    text-align: center;
+}
+
 /* ---------- Mobile ---------- */
 @media (max-width: 640px) {
     .banner-cover { height: 110px; }

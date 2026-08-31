@@ -57,7 +57,7 @@ app.post("/signup", async (req, res) => {
         req.session.user = req.body.name;
         res.render("dashboard", { naming: req.body.name });
     } catch {
-        res.send("Error creating account or username taken");
+        res.render("signup", { error: "That username is already taken." });
     }
 });
 
@@ -70,10 +70,10 @@ app.post("/login", async (req, res) => {
             req.session.user = check.name;
             res.render("dashboard", { naming: check.name });
         } else {
-            res.send("Incorrect name or password");
+            res.render("login", { error: "Incorrect name or password." }); // ← should say res.render, not res.send
         }
     } catch {
-        res.send("An error occurred during login");
+        res.render("login", { error: "Something went wrong logging in." });
     }
 });
 

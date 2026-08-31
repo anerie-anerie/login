@@ -17,15 +17,15 @@
                 <p>Happy studying, {{naming}}!</p>
             </div>
         </div>
-        <button onclick="logout()" class="btn btn-logout">Logout 🚪</button>
+        <button onclick="logout()" class="btn btn-logout">Logout</button>
     </header>
 
     <!-- Navigation Tabs -->
     <div class="tabs-container">
         <div class="tabs">
-            <button class="tab-btn active" onclick="openTab(event, 'schedule-tab')">📅 Weekly Schedule</button>
-            <button class="tab-btn" onclick="openTab(event, 'assignments-tab')">📚 Assignments</button>
-            <button class="tab-btn" onclick="openTab(event, 'courses-tab')">🌱 Courses</button>
+            <button class="tab-btn active" onclick="openTab(event, 'schedule-tab')">Weekly Schedule</button>
+            <button class="tab-btn" onclick="openTab(event, 'assignments-tab')">Assignments</button>
+            <button class="tab-btn" onclick="openTab(event, 'courses-tab')">Courses</button>
         </div>
     </div>
 
@@ -305,5 +305,10 @@
         window.currentUser = "{{naming}}";
     </script>
     <script src="/dashboard.js"></script>
+
+    <footer class="site-footer">
+    <a href="https://github.com/anerie-anerie/login" target="_blank" rel="noopener noreferrer">built by anerie :)</a>
+</footer>
+
 </body>
 </html>
