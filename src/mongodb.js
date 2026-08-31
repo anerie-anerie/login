@@ -45,7 +45,8 @@ const logInSchema = new mongoose.Schema({
     assignments: [{
         subject: String,
         name: String,
-        dueDate: String
+        dueDate: String,
+        completed: { type: Boolean, default: false }
     }],
     schedule: {
         Monday: { type: daySchema, default: () => ({ deadlines: [], homework: [] }) },

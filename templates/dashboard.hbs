@@ -6,17 +6,15 @@
     <title>Plantastic - Dashboard</title>
     <link rel="stylesheet" href="/style.css">
 </head>
+
 <body>
 
-    <!-- Top Banner & Header -->
     <div class="banner-cover"></div>
-
     <header class="navbar">
         <div class="brand-header">
-            <div class="brand-icon">🪴</div>
             <div class="brand-title">
                 <h2>Welcome to Plantastic</h2>
-                <p>Happy studying, {{username}}! ✨</p>
+                <p>Happy studying, {{naming}}!</p>
             </div>
         </div>
         <button onclick="logout()" class="btn btn-logout">Logout 🚪</button>
@@ -266,12 +264,12 @@
                 
                 <div class="color-picker-group">
                     <div class="color-palette" id="colorPalette">
-                        <button type="button" class="swatch active" data-color="#e74c3c" style="background-color: #e74c3c;"></button>
-                        <button type="button" class="swatch" data-color="#e67e22" style="background-color: #e67e22;"></button>
-                        <button type="button" class="swatch" data-color="#f1c40f" style="background-color: #f1c40f;"></button>
-                        <button type="button" class="swatch" data-color="#2ecc71" style="background-color: #2ecc71;"></button>
-                        <button type="button" class="swatch" data-color="#3498db" style="background-color: #3498db;"></button>
-                        <button type="button" class="swatch" data-color="#9b59b6" style="background-color: #9b59b6;"></button>
+                        <button type="button" class="swatch active" data-color="#ffa0a0" style="background-color: #ffa0a0;"></button>
+                        <button type="button" class="swatch" data-color="#ffc9a0" style="background-color: #ffc9a0;"></button>
+                        <button type="button" class="swatch" data-color="#ffefa0" style="background-color: #ffefa0;"></button>
+                        <button type="button" class="swatch" data-color="#d2ffa0" style="background-color: #d2ffa0;"></button>
+                        <button type="button" class="swatch" data-color="#a0ffff" style="background-color: #a0ffff;"></button>
+                        <button type="button" class="swatch" data-color="#c2bafc" style="background-color: #c2bafc;"></button>
                         
                         <!-- Custom Emoji Color Picker -->
                         <div class="custom-emoji-picker" id="customPickerWrapper" title="Custom Color">
@@ -304,7 +302,7 @@
     </main>
 
     <script>
-        window.currentUser = "{{username}}";
+        window.currentUser = "{{naming}}";
     </script>
     <script src="/dashboard.js"></script>
 </body>

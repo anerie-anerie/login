@@ -83,9 +83,8 @@ body {
 
 /* Student Dashboard Layout */
 .banner-cover {
-    height: 120px;
-    background: linear-gradient(135deg, #ccd5ae 0%, #e9edc9 50%, #faedcd 100%);
-    border-bottom: 1px solid var(--border-color);
+    height: 140px;
+    background: linear-gradient(180deg, #ccd5ae 0%, #e9edc9 55%, var(--bg-main) 100%);
 }
 
 .navbar {
@@ -390,4 +389,49 @@ body {
 .data-table th {
     background: #f7f5f0;
     color: var(--text-muted);
+}
+
+/* ---------- Mobile ---------- */
+@media (max-width: 640px) {
+    .banner-cover { height: 110px; }
+
+    .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        margin-top: -20px;
+    }
+
+    .brand-title h2 { font-size: 1.3rem; }
+
+    .btn-logout { align-self: flex-end; }
+
+    .tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        flex-wrap: nowrap;
+    }
+    .tab-btn { flex-shrink: 0; }
+
+    .weekly-grid {
+        grid-template-columns: 1fr; /* one day per row instead of a tight multi-column squeeze */
+    }
+
+    .data-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .data-form input, .data-form select, .data-form .btn {
+        width: 100%;
+    }
+
+    .data-table {
+        display: block;
+        overflow-x: auto; /* lets wide tables scroll sideways instead of squashing columns unreadably */
+        white-space: nowrap;
+    }
+
+    .content-container, .tabs-container, .navbar {
+        padding: 0 16px;
+    }
 }
