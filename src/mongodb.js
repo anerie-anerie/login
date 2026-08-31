@@ -1,8 +1,10 @@
 const mongoose = require("mongoose");
 
-const config = require("../config"); // Path to config.js
+const dbURI = process.env.MONGO_URI;
 
-const dbURI = config.mongoURI;
+if (!dbURI) {
+    console.error("MONGO_URI is missing. Set it in your .env file locally, or in Vercel's Environment Variables.");
+}
 
 mongoose.connect(dbURI)
 .then(() => {
