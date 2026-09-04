@@ -34,6 +34,11 @@
 
         <!-- TAB 1: WEEKLY SCHEDULE -->
         <div id="schedule-tab" class="tab-content active">
+
+            <div class="week-actions">
+            <button type="button" class="clear-week-btn" onclick="clearWeekTasks()">Clear</button>
+        </div>
+
             <div class="weekly-grid">
                 
                 <!-- Monday -->
@@ -239,19 +244,35 @@
                 <button type="submit" class="btn btn-primary">Add Assignment</button>
             </form>
 
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Subject</th>
-                        <th>Assignment</th>
-                        <th>Due Date</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="assignmentTableBody">
-                    <!-- Dynamic Rows -->
-                </tbody>
-            </table>
+            <div class="view-toggle">
+                <button type="button" id="view-list-btn" class="view-toggle-btn active" onclick="toggleAssignmentView('list')">List</button>
+                <button type="button" id="view-calendar-btn" class="view-toggle-btn" onclick="toggleAssignmentView('calendar')">Calendar</button>
+            </div>
+
+            <div id="assignmentListView">
+                <table class="data-table" id="assignmentTable">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Assignment</th>
+                            <th>Due Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="assignmentTableBody">
+                        <!-- Dynamic Rows -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="assignmentCalendarView" style="display: none;">
+                <div class="calendar-nav">
+                    <button type="button" class="btn btn-sm" onclick="changeCalendarMonth(-1)">← Prev</button>
+                    <span id="calendarMonthLabel" class="calendar-month-label"></span>
+                    <button type="button" class="btn btn-sm" onclick="changeCalendarMonth(1)">Next →</button>
+                </div>
+                <div id="calendarGrid" class="calendar-grid"></div>
+            </div>
         </div>
 
         <!-- TAB 3: COURSES -->
@@ -285,7 +306,6 @@
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Color</th>
                         <th>Code</th>
                         <th>Name</th>
                         <th>Description</th>

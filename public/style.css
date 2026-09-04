@@ -420,6 +420,220 @@ body {
     text-align: center;
 }
 
+/* Hyperlinks inside task/assignment/course text */
+.task-link {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+}
+
+/* Inline edit input, shown when double-clicking a manual task */
+.inline-edit-input {
+    flex: 1;
+    padding: 2px 6px;
+    border: 1px solid var(--sage-dark);
+    border-radius: 6px;
+    font-size: 0.88rem;
+    font-family: inherit;
+    background: #ffffff;
+    color: var(--text-dark);
+}
+
+/* Per-day clear button */
+.week-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 12px;
+}
+.clear-week-btn {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    color: #7A1F1E;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 8px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+.clear-week-btn:hover {
+    background: #fdecea;
+    border-color: #f5c6c2;
+}
+
+/* Calendar cells: fixed size regardless of assignment name length */
+.calendar-cell {
+    min-height: 80px;
+    min-width: 0; /* stops a long assignment name from forcing the grid column to widen */
+    background: #fcfbf7;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow: hidden;
+}
+.calendar-chip {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* Deadlines: uniform medium green by default (manual deadlines with no course attached) */
+.task-item.deadline-item {
+    background: var(--sage-primary);
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+}
+.task-item.deadline-item .delete-task-btn {
+    color: #ffffff;
+}
+.task-item:not(.deadline-item) {
+    background: #ffffff;
+}
+
+/* Course-specific deadlines (auto-generated from assignments) use the course's own color, black text */
+.task-item.deadline-item.auto-generated {
+    color: #000000;
+    font-weight: 600;
+}
+.task-item.deadline-item.auto-generated .delete-task-btn {
+    color: #000000;
+}
+
+/* Nicer spacing/rounding on every task row */
+.task-item {
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 12px;
+}
+.task-item .delete-task-btn {
+    margin-left: auto;
+    padding-left: 6px;
+}
+.task-item input[type="checkbox"] {
+    margin: 0;
+    flex-shrink: 0;
+}
+
+/* Course code badge (Courses tab) */
+.course-code-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-weight: 700;
+    color: #000000;
+}
+
+/* Subject tag (Assignments tab) */
+.subject-tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: #000000;
+}
+
+/* Edit / Delete action buttons */
+.btn-sm { padding: 6px 10px; font-size: 0.78rem; border-radius: 8px; cursor: pointer; }
+.btn-edit {
+    background: #ffffff;
+    color: var(--text-dark);
+    border: 1px solid var(--border-color);
+    margin-right: 4px;
+}
+.btn-delete {
+    background: none;
+    border: none;
+    color: #b3261e;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+/* Assignments: list/calendar toggle */
+.view-toggle {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+.view-toggle-btn {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+.view-toggle-btn.active {
+    background: var(--sage-primary);
+    color: #ffffff;
+    border-color: var(--sage-primary);
+}
+
+/* Assignments: calendar view */
+.calendar-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 14px;
+}
+.calendar-month-label {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--sage-dark);
+    min-width: 160px;
+    text-align: center;
+}
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 14px;
+    box-shadow: var(--shadow-soft);
+}
+.calendar-day-header {
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding-bottom: 6px;
+}
+.calendar-cell.empty { background: transparent; border: none; }
+.calendar-day-num { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); }
+.calendar-chip {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 6px;
+    color: #000000;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.calendar-chip.completed { text-decoration: line-through; opacity: 0.6; }
+
+
+#assignmentTable {
+    table-layout: fixed;
+}
+#assignmentTable th:nth-child(1), #assignmentTable td:nth-child(1) { width: 18%; }
+#assignmentTable th:nth-child(2), #assignmentTable td:nth-child(2) { width: 42%; }
+#assignmentTable th:nth-child(3), #assignmentTable td:nth-child(3) { width: 20%; }
+#assignmentTable th:nth-child(4), #assignmentTable td:nth-child(4) { width: 20%; }
+#assignmentTable td:nth-child(2) {
+    white-space: normal;
+    word-break: break-word;
+}
+
 /* ---------- Mobile ---------- */
 @media (max-width: 640px) {
     .banner-cover { height: 110px; }
@@ -463,4 +677,8 @@ body {
     .content-container, .tabs-container, .navbar {
         padding: 0 16px;
     }
+
+    .calendar-cell { min-height: 56px; }
+    .calendar-grid { gap: 4px; padding: 8px; }
+    .calendar-chip { font-size: 0.62rem; }
 }
