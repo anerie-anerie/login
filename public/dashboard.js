@@ -6,6 +6,8 @@ let calendarView = false;
 let calMonth = new Date().getMonth();
 let calYear = new Date().getFullYear();
 
+const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
 let appData = {
     courses: [],
     assignments: [],
@@ -22,6 +24,8 @@ let appData = {
 
 document.addEventListener('DOMContentLoaded', () => {
     loadData();
+    setupDragAndDrop();
+    highlightToday();
 
     document.getElementById('courseForm')?.addEventListener('submit', addCourse);
     document.getElementById('assignmentForm')?.addEventListener('submit', addAssignment);
@@ -58,8 +62,9 @@ function escapeHtml(str) {
         .replace(/'/g, '&#039;');
 }
 
-// Escapes text first (so nothing typed can inject HTML), then turns any URL-looking
-// substring into a real clickable link. Safe to use anywhere user-typed text is displayed.
+// Escapes text first, then converts two kinds of links:
+//   1. [display text](https://example.com)  -> a hyperlink showing custom text, like Google Sheets' HYPERLINK()
+//   2. any bare https://... or www.... URL   -> still auto-linked as-is
 function linkify(str) {
     const escaped = escapeHtml(str);
     const combinedRegex = /\[([^\[\]]+)\]\((https?:\/\/[^\s()]+|www\.[^\s()]+)\)|((?:https?:\/\/|www\.)[^\s<]+)/g;
@@ -76,7 +81,6 @@ function linkify(str) {
         return match;
     });
 }
-
 
 async function saveData() {
     if (!window.currentUser) return;
@@ -151,6 +155,25 @@ function getDayNameFromDate(dateStr) {
     const targetDate = new Date(year, month - 1, day);
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     return days[targetDate.getDay()];
+}
+
+function todayIsoDate() {
+    const t = new Date();
+    return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`;
+}
+
+// Adds a highlight class to whichever day-card matches today's weekday name.
+// Matches by reading each card's <h4> text, so no extra IDs need to be added to dashboard.hbs.
+function highlightToday() {
+    const todayName = DAY_NAMES[(new Date().getDay() + 6) % 7]; // getDay() is Sun-first; DAY_NAMES is Mon-first
+    document.querySelectorAll('.day-card').forEach(card => {
+        const heading = card.querySelector('h4');
+        if (heading && heading.textContent.trim() === todayName) {
+            card.classList.add('today-card');
+        } else {
+            card.classList.remove('today-card');
+        }
+    });
 }
 
 // COURSES
@@ -344,6 +367,8 @@ function renderCalendar() {
     const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     label.textContent = `${monthNames[calMonth]} ${calYear}`;
 
+    const todayStr = todayIsoDate();
+
     grid.innerHTML = '';
     ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(d => {
         const h = document.createElement('div');
@@ -363,8 +388,8 @@ function renderCalendar() {
 
     for (let day = 1; day <= daysInMonth; day++) {
         const cell = document.createElement('div');
-        cell.className = 'calendar-cell';
         const dateStr = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        cell.className = 'calendar-cell' + (dateStr === todayStr ? ' today-cell' : '');
 
         const dayNum = document.createElement('div');
         dayNum.className = 'calendar-day-num';
@@ -388,9 +413,7 @@ function renderCalendar() {
 
 // WEEKLY SCHEDULE
 function renderSchedule() {
-    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-
-    days.forEach(day => {
+    DAY_NAMES.forEach(day => {
         const deadlinesContainer = document.getElementById(`${day}-deadlines`);
         const homeworkContainer = document.getElementById(`${day}-homework`);
         if (!deadlinesContainer || !homeworkContainer) return;
@@ -398,7 +421,7 @@ function renderSchedule() {
         deadlinesContainer.innerHTML = '';
         homeworkContainer.innerHTML = '';
 
-        // 1. FILTERED ASSIGNMENTS FOR CURRENT WEEK (With Checkbox & Completion State)
+        // 1. FILTERED ASSIGNMENTS FOR CURRENT WEEK (With Checkbox & Completion State) - draggable to another day
         const currentWeekAssignments = appData.assignments
             .map((assignment, index) => ({ assignment, index }))
             .filter(({ assignment }) => {
@@ -410,6 +433,10 @@ function renderSchedule() {
             const div = document.createElement('div');
             div.className = `task-item deadline-item auto-generated ${assignment.completed ? 'completed' : ''}`;
             div.style.backgroundColor = courseColor;
+            div.draggable = true;
+            div.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', JSON.stringify({ kind: 'assignment', index }));
+            });
             div.innerHTML = `
                 <input type="checkbox" ${assignment.completed ? 'checked' : ''} onchange="toggleAssignmentCompletion(${index})">
                 <span>${linkify(assignment.name)}</span>
@@ -418,10 +445,11 @@ function renderSchedule() {
             deadlinesContainer.appendChild(div);
         });
 
-        // 2. MANUAL DEADLINES (double-click the text to edit it)
+        // 2. MANUAL DEADLINES (double-click text to edit; drag to move to another day or reorder within this one)
         (appData.schedule[day]?.deadlines || []).forEach((task, idx) => {
             const div = document.createElement('div');
             div.className = `task-item deadline-item ${task.completed ? 'completed' : ''}`;
+            attachManualDragHandlers(div, day, 'deadlines', idx);
             div.innerHTML = `
                 <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask('${day}', 'deadlines', ${idx})">
                 <span ondblclick="startEditManualTask('${day}', 'deadlines', ${idx}, this)">${linkify(task.text)}</span>
@@ -430,10 +458,11 @@ function renderSchedule() {
             deadlinesContainer.appendChild(div);
         });
 
-        // 3. MANUAL HOMEWORK (double-click the text to edit it)
+        // 3. MANUAL HOMEWORK (double-click text to edit; drag to move to another day or reorder within this one)
         (appData.schedule[day]?.homework || []).forEach((task, idx) => {
             const div = document.createElement('div');
             div.className = `task-item ${task.completed ? 'completed' : ''}`;
+            attachManualDragHandlers(div, day, 'homework', idx);
             div.innerHTML = `
                 <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask('${day}', 'homework', ${idx})">
                 <span ondblclick="startEditManualTask('${day}', 'homework', ${idx}, this)">${linkify(task.text)}</span>
@@ -444,6 +473,134 @@ function renderSchedule() {
 
         updateProgress(day);
     });
+
+    highlightToday();
+}
+
+// Wires up a manual task item to be draggable, and to accept drops that reorder it
+// relative to itself (drop on the top half = insert before, bottom half = insert after).
+function attachManualDragHandlers(div, day, type, idx) {
+    div.draggable = true;
+
+    div.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', JSON.stringify({ kind: 'manual', day, type, index: idx }));
+    });
+
+    div.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.stopPropagation(); // don't let the container's own dragover also fire
+        const rect = div.getBoundingClientRect();
+        const isAfter = (e.clientY - rect.top) > rect.height / 2;
+        div.classList.toggle('drop-indicator-top', !isAfter);
+        div.classList.toggle('drop-indicator-bottom', isAfter);
+        div.dataset.dropPosition = isAfter ? 'after' : 'before';
+    });
+
+    div.addEventListener('dragleave', () => {
+        div.classList.remove('drop-indicator-top', 'drop-indicator-bottom');
+    });
+
+    div.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation(); // don't let the container's own drop also fire and double-move the task
+        div.classList.remove('drop-indicator-top', 'drop-indicator-bottom');
+        handleItemDrop(e, day, type, idx, div.dataset.dropPosition || 'before');
+    });
+}
+
+// Reorders (or moves, if coming from a different day) a manual task to sit directly
+// before or after the item it was dropped on.
+function handleItemDrop(e, targetDay, targetType, targetIndex, position) {
+    let payload;
+    try {
+        payload = JSON.parse(e.dataTransfer.getData('text/plain'));
+    } catch {
+        return;
+    }
+    if (!payload || payload.kind !== 'manual' || payload.type !== targetType) return;
+
+    const sourceList = appData.schedule[payload.day]?.[payload.type];
+    if (!sourceList || !sourceList[payload.index]) return;
+
+    const [task] = sourceList.splice(payload.index, 1);
+
+    // account for the array shrinking by one if we removed from earlier in the same list
+    let insertIndex = targetIndex;
+    if (payload.day === targetDay && payload.index < targetIndex) {
+        insertIndex -= 1;
+    }
+    if (position === 'after') insertIndex += 1;
+
+    if (!appData.schedule[targetDay]) appData.schedule[targetDay] = { deadlines: [], homework: [] };
+    appData.schedule[targetDay][targetType].splice(insertIndex, 0, task);
+
+    saveData();
+    renderSchedule();
+}
+
+// Wires up drag-and-drop onto each day's list containers, for dropping onto empty space
+// (appends to the end) rather than onto a specific item (handled by attachManualDragHandlers above).
+// Container divs are static in dashboard.hbs and never get replaced, only their contents
+// change on re-render, so these listeners stay valid across renders.
+function setupDragAndDrop() {
+    DAY_NAMES.forEach(day => {
+        const deadlinesContainer = document.getElementById(`${day}-deadlines`);
+        const homeworkContainer = document.getElementById(`${day}-homework`);
+
+        [[deadlinesContainer, 'deadlines'], [homeworkContainer, 'homework']].forEach(([container, type]) => {
+            if (!container) return;
+
+            container.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                container.classList.add('drag-over');
+            });
+            container.addEventListener('dragleave', () => container.classList.remove('drag-over'));
+            container.addEventListener('drop', (e) => {
+                e.preventDefault();
+                container.classList.remove('drag-over');
+                handleContainerDrop(e, day, type);
+            });
+        });
+    });
+}
+
+// Handles dropping onto empty space in a day's list (not onto a specific item).
+// Manual tasks get appended to the end of that list; assignment-linked deadlines get their due date changed.
+function handleContainerDrop(e, targetDay, targetType) {
+    let payload;
+    try {
+        payload = JSON.parse(e.dataTransfer.getData('text/plain'));
+    } catch {
+        return;
+    }
+    if (!payload) return;
+
+    if (payload.kind === 'manual') {
+        if (payload.type !== targetType) return; // don't let a deadline turn into homework or vice versa
+        if (payload.day === targetDay) return; // dropped back in the same list with no specific position - no-op
+
+        const sourceList = appData.schedule[payload.day]?.[payload.type];
+        if (!sourceList || !sourceList[payload.index]) return;
+        const [task] = sourceList.splice(payload.index, 1);
+
+        if (!appData.schedule[targetDay]) appData.schedule[targetDay] = { deadlines: [], homework: [] };
+        appData.schedule[targetDay][targetType].push(task);
+
+        saveData();
+        renderSchedule();
+    } else if (payload.kind === 'assignment' && targetType === 'deadlines') {
+        const assignment = appData.assignments[payload.index];
+        if (!assignment) return;
+
+        const { monday } = getCurrentWeekRange();
+        const dayOffsets = { Monday: 0, Tuesday: 1, Wednesday: 2, Thursday: 3, Friday: 4, Saturday: 5, Sunday: 6 };
+        const newDate = new Date(monday);
+        newDate.setDate(monday.getDate() + dayOffsets[targetDay]);
+        assignment.dueDate = `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}-${String(newDate.getDate()).padStart(2, '0')}`;
+
+        saveData();
+        renderAll();
+    }
 }
 
 // Turns a manual task's <span> into a text input so it can be edited in place.
@@ -513,8 +670,7 @@ function removeManualTask(day, type, index) {
 // Clears manually-added deadlines and homework across every day of the week.
 // Assignment-based deadlines are untouched since those come from the Assignments tab.
 function clearWeekTasks() {
-    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    days.forEach(day => {
+    DAY_NAMES.forEach(day => {
         appData.schedule[day] = { deadlines: [], homework: [] };
     });
     saveData();
@@ -558,4 +714,3 @@ function logout() {
         window.location.href = "/login";
     });
 }
-

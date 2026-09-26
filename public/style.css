@@ -199,16 +199,33 @@ body {
 }
 
 /* Task Cards & Completion */
-.task-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
-    background: #fcfbf7;
-    border-radius: 8px;
-    font-size: 0.88rem;
-    margin-bottom: 6px;
-    border: 1px solid var(--border-color);
+/* Draggable task items */
+.task-item[draggable="true"] {
+    cursor: grab;
+}
+.task-item[draggable="true"]:active {
+    cursor: grabbing;
+}
+
+/* Drop target feedback while dragging a task over a day's list */
+div[id$="-deadlines"].drag-over,
+div[id$="-homework"].drag-over {
+    background: var(--sage-light);
+    border-radius: 10px;
+    outline: 2px dashed var(--sage-primary);
+    outline-offset: 4px;
+}
+
+/* Today highlight: weekly view */
+.day-card.today-card {
+    background: var(--sage-light);
+    border: 2px solid var(--sage-primary);
+}
+
+/* Today highlight: calendar view */
+.calendar-cell.today-cell {
+    background: var(--sage-light);
+    border: 2px solid var(--sage-primary);
 }
 
 .task-item span {
@@ -223,6 +240,15 @@ body {
 .task-item.deadline-item.auto-generated {
     border: none;
     font-weight: 600;
+}
+
+
+/* Reorder indicator: shows where a dragged task will land, without shifting any spacing */
+.task-item.drop-indicator-top {
+    box-shadow: inset 0 3px 0 0 var(--sage-dark);
+}
+.task-item.drop-indicator-bottom {
+    box-shadow: inset 0 -3px 0 0 var(--sage-dark);
 }
 
 .delete-task-btn {
@@ -501,12 +527,20 @@ body {
     color: #000000;
 }
 
-/* Nicer spacing/rounding on every task row */
 .task-item {
+    display: flex;
+    align-items: center;
     gap: 10px;
     padding: 10px 14px;
+    background: #fcfbf7;
     border-radius: 12px;
+    font-size: 0.88rem;
+    margin-bottom: 8px;
+    border: 1px solid var(--border-color);
 }
+
+/* Nicer spacing/rounding on every task row */
+
 .task-item .delete-task-btn {
     margin-left: auto;
     padding-left: 6px;
